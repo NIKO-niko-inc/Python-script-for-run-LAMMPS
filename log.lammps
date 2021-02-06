@@ -1,0 +1,56 @@
+LAMMPS (15 Apr 2020)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (../comm.cpp:94)
+  using 1 OpenMP thread(s) per MPI task
+#####################################################
+#                                                   #
+# DEFORM DREIDING LAMMPS INPUT SCRIPT               #
+#                                                   #
+# Filename: in.deform_dreiding.txt                  #
+# Author: Mark Tschopp, 2010                        #
+#                                                   #
+# The methodology outlined here follows that from   #
+# Hossain, Tschopp, et al. 2010, Polymer.  Please   #
+# cite accordingly. The following script requires   #
+# a LAMMPS data file containing the coordinates and #
+# appropriate bond/angle/dihedral lists for each    #
+# united atom.                                      #
+#                                                   #
+# Execute the script through:                       #
+# lmp_exe < in.deform_dreiding.txt                  #
+#                                                   #
+#####################################################
+
+# VARIABLES DEFINITION
+
+variable fname index PE_nc10_cl1000.dat
+variable simname index PE_nc10_cl1000
+
+#       Initialization
+
+units	real
+# 	For style real, these are the units:
+# 	mass = grams/mole
+# 	distance = Angstroms
+# 	time = femtoseconds
+# 	energy = Kcal/mole
+# 	velocity = Angstroms/femtosecond
+# 	force = Kcal/mole-Angstrom
+# 	torque = Kcal/mole - krutjashchij moment sily
+# 	temperature = Kelvin
+# 	pressure = atmospheres
+# 	dynamic viscosity = Poise
+# 	charge = multiple of electron charge (1.0 is a proton)
+# 	dipole = charge*Angstroms
+# 	electric field = volts/Angstrom
+# 	density = gram/cm^dim
+
+boundary p p p
+# 	periodic boundary condition
+
+atom_style molecular
+# 	define atom style as uncharged molecules
+# 	the following addition  attributes are associated with the atoms:
+# 	bonds, angles, dihedrals, impropers
+
+log log.${simname}.txt
+log log.PE_nc10_cl1000.txt

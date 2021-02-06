@@ -1,0 +1,536 @@
+# 	open new log file
+
+read_data ${fname}
+read_data PE_nc10_cl1000.dat
+  orthogonal box = (0 0 0) to (80.0586 80.0586 80.0586)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  10000 atoms
+  scanning bonds ...
+  1 = max bonds/atom
+  scanning angles ...
+  1 = max angles/atom
+  scanning dihedrals ...
+  1 = max dihedrals/atom
+  reading bonds ...
+  9990 bonds
+  reading angles ...
+  9980 angles
+  reading dihedrals ...
+  9970 dihedrals
+  2 = max # of 1-2 neighbors
+  2 = max # of 1-3 neighbors
+  4 = max # of 1-4 neighbors
+  6 = max # of special neighbors
+  special bonds CPU = 0.0198836 secs
+  read_data CPU = 0.216124 secs
+# 	Read in a data file containing information LAMMPS needs to run a simulation
+
+##################################################################
+
+# 			Dreiding potential information
+neighbor	0.4 bin
+neigh_modify	every 10 one 10000
+bond_style      harmonic
+bond_coeff	1 350 1.53
+angle_style     harmonic
+angle_coeff	1 60 109.5
+dihedral_style	multi/harmonic
+dihedral_coeff	1 1.73 -4.49 0.776 6.99 0.0
+pair_style	lj/cut 10.5
+pair_coeff	1 1 0.112 4.01 10.5
+
+#####################################################
+# 	Equilibration Stage 1 (Langevin dynamics at 500 K)
+
+velocity all create 500.0 1231
+# 	generates an ensemble of velocities using a random number
+# 	generator with the specified seed as the specified temperature
+# 	velocity group-ID style args keyword value ...
+# 	create args = temp seed
+#      	temp = temperature value (temperature units)
+#      	seed = random # seed (positive integer)
+#      	slychajnoe nachalnoe chislo
+
+fix 1 all nve/limit 0.05
+# 	Set a fix that will be applied to a group of atoms
+# 	fix ID group-ID style args
+#    	ID = user-assigned name for the fix
+#    	group-ID = ID of the group of atoms to apply the fix to
+#    	style = one of a long list of possible style names (see below)
+#    	args = arguments used by a particular style
+# 	nve/limit - NVE with limited step length
+
+fix 2 all langevin 500.0 500.0 10.0 904297
+# 	langevin - Langevin temperature control
+# 	fix ID group-ID langevin Tstart Tstop damp seed keyword values ...
+# 	Tstart,Tstop = desired temperature at start/end of run (temperature units)
+# 	Tstart can be a variable (see below)
+# 	damp = damping parameter (time units)
+# 	seed = random number seed to use for white noise (positive integer)
+# 	zero or more keyword/value pairs may be appended
+
+thermo_style	custom step temp press
+# 	Set the style and content for printing thermodynamic data to the screen and log file.
+# 	thermo_style style args
+# 	style = one or multi or custom
+#      	custom args = list of keywords
+#       step = timestep
+#       temp = temperature
+#       press = pressure
+
+thermo   100
+# 	Compute and print thermodynamic info (e.g. temperature, energy, pressure) on timesteps
+# 	that are a multiple of N and at the beginning and end of a simulation.
+# 	A value of 0 will only print thermodynamics at the beginning and end.
+# 	thermo N
+# 	N = output thermodynamics every N timesteps
+# 	N can be a variable
+
+timestep 1
+# 	Set the timestep size for subsequent molecular dynamics simulations
+# 	timestep dt
+# 	dt = timestep size (time units)
+
+run 500
+Neighbor list info ...
+  update every 10 steps, delay 10 steps, check yes
+  max neighbors/atom: 10000, page size: 100000
+  master list distance cutoff = 10.9
+  ghost atom cutoff = 10.9
+  binsize = 5.45, bins = 15 15 15
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair lj/cut, perpetual
+      attributes: half, newton on
+      pair build: half/bin/newton
+      stencil: half/bin/3d/newton
+      bin: standard
+WARNING: Inconsistent image flags (../domain.cpp:812)
+Per MPI rank memory allocation (min/avg/max) = 18.66 | 18.66 | 18.66 Mbytes
+Step Temp Press 
+       0          500 1.8475472e+08 
+     100    810.18213     67833.12 
+     200    557.64949    39410.847 
+     300    527.68462    28726.514 
+     400    511.36469    22834.291 
+     500     513.4912    19010.281 
+Loop time of 13.1928 on 1 procs for 500 steps with 10000 atoms
+
+Performance: 3.275 ns/day, 7.329 hours/ns, 37.900 timesteps/s
+100.0% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 9.2248     | 9.2248     | 9.2248     |   0.0 | 69.92
+Bond    | 1.4732     | 1.4732     | 1.4732     |   0.0 | 11.17
+Neigh   | 1.9751     | 1.9751     | 1.9751     |   0.0 | 14.97
+Comm    | 0.083546   | 0.083546   | 0.083546   |   0.0 |  0.63
+Output  | 0.0089575  | 0.0089575  | 0.0089575  |   0.0 |  0.07
+Modify  | 0.40054    | 0.40054    | 0.40054    |   0.0 |  3.04
+Other   |            | 0.02663    |            |       |  0.20
+
+Nlocal:    10000 ave 10000 max 10000 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    12775 ave 12775 max 12775 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    834829 ave 834829 max 834829 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 834829
+Ave neighs/atom = 83.4829
+Ave special neighs/atom = 5.988
+Neighbor list builds = 48
+Dangerous builds = 46
+# 	run N keyword values ...
+# 	N = # of timesteps
+# 	A value of N = 0 is acceptable; only the thermodynamics of the
+# 	system are computed and printed without taking a timestep.
+
+
+unfix 1
+unfix 2
+# 	Delete a fix that was previously defined with a fix command.
+
+write_restart 	restart.${simname}.dreiding1
+write_restart 	restart.PE_nc10_cl1000.dreiding1
+#	write_restart file keyword value ...
+# 	Write a binary restart file of the current state of the simulation.
+
+#####################################################
+# 	Equilibration Stage 2 (NPT dynamics at 500 K)
+
+fix 1 all npt temp 500.0 500.0 50 iso 0 0 1000 drag 2
+# 	npt - constant NPT time integration via Nose/Hoover
+# 	These commands perform time integration on Nose-Hoover style non-Hamiltonian
+# 	equations of motion which are designed to generate positions and velocities
+# 	sampled from the isothermal-isobaric (npt).
+# 	This updates the position and velocity for atoms in the group each timestep.
+# 	The thermostat parameters for fix styles npt is specified
+# 	using the temp keyword.
+#       temp values = Tstart Tstop Tdamp
+#       Tdamp = temperature damping parameter (time units)
+# 		The keyword iso means couple all 3 diagonal components together when pressure
+# 	is computed (hydrostatic pressure), and dilate/contract the dimensions together.
+# 	iso or aniso or tri values = Pstart Pstop Pdamp
+#       Pstart,Pstop = scalar external pressure at start/end of run (pressure units)
+#       Pdamp = pressure damping parameter (time units)
+# 	drag value = Df
+#       Df = drag factor added to barostat/thermostat (0.0 = no drag)
+
+fix  2 all momentum 1 linear 1 1 1
+# 	momentum - zero the linear and/or angular momentum of a group of atoms
+# 	Zero the linear and/or angular momentum of the group of atoms every
+# 	N timesteps by adjusting the velocities of the atoms.
+# 	If the linear keyword is used, the linear momentum is zeroed by subtracting
+# 	the center-of-mass velocity of the group from each atom.
+# 	This does not change the relative velocity of any pair of atoms.
+# 	One or more dimensions can be excluded from this operation
+# 	by setting the corresponding flag to 0.
+
+thermo_style	custom step temp press
+thermo          100
+timestep	0.5
+reset_timestep	0
+# 	Set the timestep counter to the specified value.
+# 	This command normally comes after the timestep has been set
+# 	by reading a restart file via the read_restart command,
+# 	or a previous simulation advanced the timestep.
+
+run		300
+WARNING: Inconsistent image flags (../domain.cpp:812)
+Per MPI rank memory allocation (min/avg/max) = 18.66 | 18.66 | 18.66 Mbytes
+Step Temp Press 
+       0     513.4912    19010.281 
+     100    718.82481    11287.894 
+     200    851.81585    6384.4351 
+     300     853.9069    3277.1078 
+Loop time of 8.14869 on 1 procs for 300 steps with 10000 atoms
+
+Performance: 1.590 ns/day, 15.090 hours/ns, 36.816 timesteps/s
+96.1% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 5.3277     | 5.3277     | 5.3277     |   0.0 | 65.38
+Bond    | 1.1999     | 1.1999     | 1.1999     |   0.0 | 14.73
+Neigh   | 1.2789     | 1.2789     | 1.2789     |   0.0 | 15.69
+Comm    | 0.053688   | 0.053688   | 0.053688   |   0.0 |  0.66
+Output  | 0.0063322  | 0.0063322  | 0.0063322  |   0.0 |  0.08
+Modify  | 0.26117    | 0.26117    | 0.26117    |   0.0 |  3.21
+Other   |            | 0.02099    |            |       |  0.26
+
+Nlocal:    10000 ave 10000 max 10000 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    12282 ave 12282 max 12282 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    711674 ave 711674 max 711674 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 711674
+Ave neighs/atom = 71.1674
+Ave special neighs/atom = 5.988
+Neighbor list builds = 29
+Dangerous builds = 28
+unfix 1
+unfix 2
+write_restart 	restart.${simname}.dreiding2
+write_restart 	restart.PE_nc10_cl1000.dreiding2
+
+#####################################################
+# 	Equilibration Stage 3 (NPT dynamics from 500 K --> 100 K)
+fix		1 all npt temp 500 100 50 iso 0 0 1000 drag 2
+fix		2 all momentum 1 linear 1 1 1
+thermo_style	custom step temp press
+thermo          10
+timestep	0.5
+reset_timestep 	0
+run		300
+WARNING: Inconsistent image flags (../domain.cpp:812)
+Per MPI rank memory allocation (min/avg/max) = 18.66 | 18.66 | 18.66 Mbytes
+Step Temp Press 
+       0     853.9069    3277.1078 
+      10    855.01687    3425.7265 
+      20    848.36744     3328.928 
+      30    845.49857    3029.9643 
+      40    839.89105    2683.4878 
+      50    835.03107     2501.158 
+      60    834.18978    2531.2409 
+      70    825.58257    2568.5125 
+      80    818.45086    2469.1448 
+      90    812.71621     2168.864 
+     100    797.52947    1750.1061 
+     110      791.253    1523.7193 
+     120    787.37867     1545.497 
+     130    775.13196    1642.9935 
+     140    770.78415    1683.0168 
+     150    761.16271    1482.6237 
+     160    743.91514    1126.0594 
+     170    735.98628    915.27278 
+     180    724.22962    914.60468 
+     190    709.52352    1060.7112 
+     200    701.79318    1207.9157 
+     210     690.4426    1155.4328 
+     220    678.10814    938.00803 
+     230     667.7088    727.46169 
+     240    654.67543    649.69943 
+     250     641.8856    742.21538 
+     260    627.88001    889.07566 
+     270     612.0545    937.47309 
+     280    596.79841     831.0454 
+     290    580.48381    629.46837 
+     300    564.98691    476.46725 
+Loop time of 6.90738 on 1 procs for 300 steps with 10000 atoms
+
+Performance: 1.876 ns/day, 12.791 hours/ns, 43.432 timesteps/s
+98.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 4.6255     | 4.6255     | 4.6255     |   0.0 | 66.96
+Bond    | 1.1711     | 1.1711     | 1.1711     |   0.0 | 16.95
+Neigh   | 0.75009    | 0.75009    | 0.75009    |   0.0 | 10.86
+Comm    | 0.046758   | 0.046758   | 0.046758   |   0.0 |  0.68
+Output  | 0.068265   | 0.068265   | 0.068265   |   0.0 |  0.99
+Modify  | 0.2283     | 0.2283     | 0.2283     |   0.0 |  3.31
+Other   |            | 0.01744    |            |       |  0.25
+
+Nlocal:    10000 ave 10000 max 10000 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    12080 ave 12080 max 12080 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    638983 ave 638983 max 638983 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 638983
+Ave neighs/atom = 63.8983
+Ave special neighs/atom = 5.988
+Neighbor list builds = 19
+Dangerous builds = 9
+unfix 1
+unfix 2
+write_restart 	restart.${simname}.dreiding3
+write_restart 	restart.PE_nc10_cl1000.dreiding3
+
+#####################################################
+# 	Equilibration Stage 4 (NPT dynamics at 100 K)
+fix		1 all npt temp 100 100 50 iso 0 0 1000 drag 2
+fix		2 all momentum 1 linear 1 1 1
+thermo_style	custom step temp press epair ebond eangle edihed pxx pyy pzz lx ly lz
+thermo          10
+timestep	0.5
+reset_timestep 	0
+run		300
+WARNING: Inconsistent image flags (../domain.cpp:812)
+Per MPI rank memory allocation (min/avg/max) = 18.66 | 18.66 | 18.66 Mbytes
+Step Temp Press E_pair E_bond E_angle E_dihed Pxx Pyy Pzz Lx Ly Lz 
+       0    564.98691    476.46725    -7910.846    3279.2666    4237.6096    10696.211    415.98314     646.0454     367.3732    83.151618    83.151618    83.151618 
+      10     558.0423     615.3017   -7908.2964    3226.9167    4127.4001     10626.52    797.03989    736.89834    311.96689    83.153903    83.153903    83.153903 
+      20     544.9572    686.14587   -7898.0494    3168.8856    4055.2434    10561.132    1144.9788    603.88852    309.57033    83.161439    83.161439    83.161439 
+      30    531.11491     624.0459    -7889.476    3052.3176    4010.3517    10503.022    1152.3702    418.70701    301.06051    83.174687    83.174687    83.174687 
+      40    514.07498    458.80275   -7889.6255    3039.2221    3965.5092    10451.977    813.06535     308.9314    254.41149    83.192999    83.192999    83.192999 
+      50    498.74017     338.3978   -7893.5765    3005.9238    3913.3171    10404.826    527.56129     311.5953    176.03681    83.214927    83.214927    83.214927 
+      60    485.56151    335.49641   -7891.2684    2916.9536    3870.9273    10356.783     588.9135    382.86208    34.713664    83.239362    83.239362    83.239362 
+      70    472.04128    385.06671    -7884.854    2884.9167    3808.8828    10302.669    819.41446    371.40491   -35.619243    83.266109    83.266109    83.266109 
+      80    463.25947    394.89105   -7883.3732    2798.6925    3694.1993    10240.649    892.75469    227.54699    64.371472    83.295398    83.295398    83.295398 
+      90    452.85278    269.77735   -7889.0135     2794.032    3579.9147    10170.933    599.76542    46.697741     162.8689    83.327061    83.327061    83.327061 
+     100    442.77853    82.553632   -7897.5304    2751.4081    3527.1133    10093.577    163.90916   -44.280762    128.03249    83.359867    83.359867    83.359867 
+     110    435.40543   -14.857626    -7904.428     2608.273    3514.9956    10011.458   -8.8000778   -2.8826805   -32.890121    83.392138    83.392138    83.392138 
+     120    424.03151    20.105854   -7909.1822    2621.7076    3482.2695     9929.001    114.33879    97.837887   -151.85911    83.422956    83.422956    83.422956 
+     130    417.48202    153.80255   -7916.8957    2548.6092    3411.3872    9847.5226    307.12665    139.48771    14.793278    83.452573    83.452573    83.452573 
+     140    410.45326    202.03514   -7930.4453    2502.4636    3344.8948    9765.3794     291.3259    8.6709067    306.10862    83.481974    83.481974    83.481974 
+     150    398.93455    71.963139   -7946.6884    2578.4029    3313.4937     9680.961     48.03472    -183.9693      351.824    83.511423    83.511423    83.511423 
+     160    394.45458    -90.04146   -7960.8331    2441.6728    3298.7383    9596.8254   -116.48962    -233.9209    80.286138    83.539832    83.539832    83.539832 
+     170    386.67483   -176.13597   -7969.1007    2402.8915    3283.4596    9518.5244   -71.882908   -169.81468   -286.71033    83.565861    83.565861    83.565861 
+     180    375.89095   -111.32003   -7971.9231    2459.6627     3267.634    9446.7918    85.836957   -46.382993   -373.41404     83.58892     83.58892     83.58892 
+     190    371.86259    73.802276   -7973.7099    2320.2184    3252.6239    9379.9648    232.04184    80.571901   -91.206912    83.609715    83.609715    83.609715 
+     200    364.67085    176.58688   -7976.8694    2280.4367    3236.7554    9317.9646    269.74754    78.699457    181.31366    83.629818    83.629818    83.629818 
+     210    357.18891    130.02493   -7977.6857    2277.9056    3199.0151    9260.2595    258.77339   -1.7321761    133.03359    83.650107    83.650107    83.650107 
+     220    352.67374    9.3043974    -7972.008    2223.5017    3125.3965    9205.7747    254.29221   -53.863275   -172.51574    83.670214    83.670214    83.670214 
+     230     346.5535   -77.491882   -7960.1759    2222.6483    3048.2853    9152.6785    239.54283   -61.408121   -410.61035    83.689175    83.689175    83.689175 
+     240    341.67796   -36.334297   -7948.3534    2157.9268    3005.7232    9100.7287     233.7392   -11.290264   -331.45182    83.706386    83.706386    83.706386 
+     250    334.61078    80.330219   -7941.8733    2154.1935    2979.1371     9051.529    228.86001    37.937233   -25.806583    83.722282    83.722282    83.722282 
+     260    329.07299    175.93902   -7938.7831    2134.1745    2936.1466    9002.9194    257.20822    37.806839    232.80201    83.737902    83.737902    83.737902 
+     270    325.61823    164.14888    -7930.832    2055.0166    2894.7724    8951.1329    294.98967   -25.954576    223.41154    83.754043    83.754043    83.754043 
+     280    317.79035    31.379964   -7915.9922    2095.1368    2871.2277    8895.1961    245.53533   -154.47204    3.0766028     83.77056     83.77056     83.77056 
+     290    314.76296   -73.565162   -7903.6402    2016.5461    2839.2682    8835.4496    162.81174   -252.53631   -130.97091    83.786398    83.786398    83.786398 
+     300    312.60538   -83.974414   -7902.5628    1944.7658    2791.4389    8773.6229    81.868592   -272.75039   -61.041441    83.800741    83.800741    83.800741 
+Loop time of 6.63097 on 1 procs for 300 steps with 10000 atoms
+
+Performance: 1.954 ns/day, 12.280 hours/ns, 45.242 timesteps/s
+96.1% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 4.4882     | 4.4882     | 4.4882     |   0.0 | 67.69
+Bond    | 1.1175     | 1.1175     | 1.1175     |   0.0 | 16.85
+Neigh   | 0.51425    | 0.51425    | 0.51425    |   0.0 |  7.76
+Comm    | 0.041972   | 0.041972   | 0.041972   |   0.0 |  0.63
+Output  | 0.23362    | 0.23362    | 0.23362    |   0.0 |  3.52
+Modify  | 0.21946    | 0.21946    | 0.21946    |   0.0 |  3.31
+Other   |            | 0.016      |            |       |  0.24
+
+Nlocal:    10000 ave 10000 max 10000 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    11893 ave 11893 max 11893 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    597573 ave 597573 max 597573 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 597573
+Ave neighs/atom = 59.7573
+Ave special neighs/atom = 5.988
+Neighbor list builds = 15
+Dangerous builds = 0
+unfix 1
+unfix 2
+write_restart 	restart.${simname}.dreiding4
+write_restart 	restart.PE_nc10_cl1000.dreiding4
+
+#####################################################
+# 	Uniaxial Tensile Deformation
+run 0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:52)
+WARNING: Inconsistent image flags (../domain.cpp:812)
+Per MPI rank memory allocation (min/avg/max) = 18.66 | 18.66 | 18.66 Mbytes
+Step Temp Press E_pair E_bond E_angle E_dihed Pxx Pyy Pzz Lx Ly Lz 
+     300    312.60538   -83.974414   -7902.5628    1944.7658    2791.4389    8773.6229    81.868592   -272.75039   -61.041441    83.800741    83.800741    83.800741 
+Loop time of 1.4e-06 on 1 procs for 0 steps with 10000 atoms
+
+0.0% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Bond    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 1.4e-06    |            |       |100.00
+
+Nlocal:    10000 ave 10000 max 10000 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    11893 ave 11893 max 11893 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    597573 ave 597573 max 597573 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 597573
+Ave neighs/atom = 59.7573
+Ave special neighs/atom = 5.988
+Neighbor list builds = 0
+Dangerous builds = 0
+variable tmp equal "lx"
+variable L0 equal ${tmp}
+variable L0 equal 83.800740910691
+variable strain equal "(lx - v_L0)/v_L0"
+variable p1 equal "v_strain"
+variable p2 equal "-pxx/10000*1.01325"
+variable p3 equal "-pyy/10000*1.01325"
+variable p4 equal "-pzz/10000*1.01325"
+variable p5 equal "lx"
+variable p6 equal "ly"
+variable p7 equal "lz"
+variable p8 equal "temp"
+variable t2 equal "epair"
+variable t3 equal "ebond"
+variable t4 equal "eangle"
+variable t5 equal "edihed"
+fix 1 all npt temp 100 100 50 y 0 0 1000 z 0 0 1000 drag 2
+
+fix 2 all deform 1 x erate 1e-5 units box remap x
+# 	Change the volume and/or shape of the simulation box during a dynamics run.
+# 	fix ID group-ID deform N parameter args ... keyword value ...
+# 	N = perform box deformation every this many timesteps
+#
+# 	The erate styles all change the specified dimension of the box via
+# 	“constant displacement” which is effectively a “constant engineering strain rate”.
+# 	This means the box dimension changes linearly with time from its initial to final value.
+
+fix def1 all print 100 "${p1} ${p2} ${p3} ${p4} ${p5} ${p6} ${p7} ${p8}" file ${simname}.def1.txt screen no
+fix def1 all print 100 "${p1} ${p2} ${p3} ${p4} ${p5} ${p6} ${p7} ${p8}" file PE_nc10_cl1000.def1.txt screen no
+fix def2 all print 100 "${p1} ${t2} ${t3} ${t4} ${t5}" file ${simname}.def2.txt screen no
+fix def2 all print 100 "${p1} ${t2} ${t3} ${t4} ${t5}" file PE_nc10_cl1000.def2.txt screen no
+thermo_style	custom step temp pxx pyy pzz lx ly lz epair ebond eangle edihed
+thermo          100
+timestep	1
+reset_timestep	0
+
+# Output strain and stress info to file
+variable tmp equal "lx"
+variable L0 equal ${tmp}
+variable L0 equal 83.800740910691
+variable strain equal "(lx - v_L0)/v_L0"
+variable p1 equal "v_strain"
+variable p2 equal "-pxx/10000*1.01325"
+variable p3 equal "-pyy/10000*1.01325"
+variable p4 equal "-pzz/10000*1.01325"
+variable p5 equal "lx"
+variable p6 equal "ly"
+variable p7 equal "lz"
+variable p8 equal "temp"
+variable t2 equal "epair"
+variable t3 equal "ebond"
+variable t4 equal "eangle"
+variable t5 equal "edihed"
+fix def1 all print 100 "${p1} ${p2} ${p3} ${p4} ${p5} ${p6} ${p7} ${p8}" file ${simname}.def1.txt
+fix def1 all print 100 "${p1} ${p2} ${p3} ${p4} ${p5} ${p6} ${p7} ${p8}" file PE_nc10_cl1000.def1.txt
+fix def2 all print 100 "${p1} ${t2} ${t3} ${t4} ${t5}" file ${simname}.def2.txt screen no screen no
+fix def2 all print 100 "${p1} ${t2} ${t3} ${t4} ${t5}" file PE_nc10_cl1000.def2.txt screen no screen no
+
+# Use cfg for AtomEye
+dump     id all atom 100 dump.POLcomp.
+run		300
+WARNING: Inconsistent image flags (../domain.cpp:812)
+-5.08737317621581e-16 -0.00829533504735635 0.0276364335911162 0.00618502400581464 83.800740910691 83.800740910691 83.800740910691 312.605379917987
+Per MPI rank memory allocation (min/avg/max) = 20.04 | 20.04 | 20.04 Mbytes
+Step Temp Pxx Pyy Pzz Lx Ly Lz E_pair E_bond E_angle E_dihed 
+       0    312.60538    81.868592   -272.75039   -61.041441    83.800741    83.800741    83.800741   -7902.5628    1944.7658    2791.4389    8773.6229 
+0.000999999999999641 -0.00991663253707641 0.00913993286176934 0.0307565333640568 83.8845416516017 83.5493300285474 83.6930125904348 245.856172188182
+     100    245.85617    97.869554   -90.204124   -303.54338    83.884542     83.54933    83.693013   -7959.7956     1616.148    2380.1855    7918.4868 
+0.00199999999999945 0.0145583346705465 0.0311125385238603 0.0200023333368428 83.9683423925123 82.9924534271433 83.1416380748093 209.11957631714
+     200    209.11958   -143.67959   -307.05688   -197.40768    83.968342    82.992453    83.141638   -8048.4365    1348.8704     2037.672    7202.2657 
+0.0029999999999996 0.0410664529333295 0.0586239926709188 0.0213940995580435 84.052143133423 82.3644813401323 82.5604389691139 181.272654830849
+     300    181.27265   -405.29438   -578.57382   -211.14335    84.052143    82.364481    82.560439   -8226.0239    1181.5642    1816.8367    6809.8336 
+Loop time of 6.6177 on 1 procs for 300 steps with 10000 atoms
+
+Performance: 3.917 ns/day, 6.127 hours/ns, 45.333 timesteps/s
+98.5% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 3.9685     | 3.9685     | 3.9685     |   0.0 | 59.97
+Bond    | 1.1173     | 1.1173     | 1.1173     |   0.0 | 16.88
+Neigh   | 1.0498     | 1.0498     | 1.0498     |   0.0 | 15.86
+Comm    | 0.04848    | 0.04848    | 0.04848    |   0.0 |  0.73
+Output  | 0.10165    | 0.10165    | 0.10165    |   0.0 |  1.54
+Modify  | 0.31535    | 0.31535    | 0.31535    |   0.0 |  4.77
+Other   |            | 0.01663    |            |       |  0.25
+
+Nlocal:    10000 ave 10000 max 10000 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    12031 ave 12031 max 12031 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    593753 ave 593753 max 593753 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 593753
+Ave neighs/atom = 59.3753
+Ave special neighs/atom = 5.988
+Neighbor list builds = 29
+Dangerous builds = 28
+
+unfix 1
+unfix 2
+unfix def1
+unfix def2
+
+print "All done"
+All done
+Total wall time: 0:00:42
