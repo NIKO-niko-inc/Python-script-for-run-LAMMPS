@@ -2,15 +2,6 @@
 #                                                   #
 # DEFORM DREIDING LAMMPS INPUT SCRIPT               #
 #                                                   #
-# Filename: in.deform_dreiding.txt                  #
-# Author: Mark Tschopp, 2010                        #
-#                                                   #
-# The methodology outlined here follows that from   #
-# Hossain, Tschopp, et al. 2010, Polymer.  Please   #
-# cite accordingly. The following script requires   #
-# a LAMMPS data file containing the coordinates and #
-# appropriate bond/angle/dihedral lists for each    #
-# united atom.                                      #
 #                                                   #
 # Execute the script through:                       #
 # lmp_exe < in.deform_dreiding.txt                  #
@@ -233,7 +224,7 @@ fix 2 all deform 1 x erate 1e-5 units box remap x
 # 	N = perform box deformation every this many timesteps
 #
 # 	The erate styles all change the specified dimension of the box via 
-# 	“constant displacement” which is effectively a “constant engineering strain rate”. 
+# 	Â“constant displacementÂ” which is effectively a Â“constant engineering strain rateÂ”. 
 # 	This means the box dimension changes linearly with time from its initial to final value.
 
 fix def1 all print 100 "${p1} ${p2} ${p3} ${p4} ${p5} ${p6} ${p7} ${p8}" file ${simname}.def1.txt screen no
